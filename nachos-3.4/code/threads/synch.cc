@@ -102,11 +102,37 @@ Semaphore::V()
 // the test case in the network assignment won't work!
 Lock::Lock(char* debugName) {}
 Lock::~Lock() {}
-void Lock::Acquire() {}
-void Lock::Release() {}
+void Lock::Acquire() {
+	IntStatus oldLevel = interrupt->SetLevel(IntOff);
+	if(lockFree){
+		lockFree = false;
+		lockList->Append((void *)currentThread);	// so go to sleep
+			currentThread->Sleep();
+	}
 
-Condition::Condition(char* debugName) { }
+	(void) interrupt->SetLevel(oldLevel);
+}
+void Lock::Release() {
+    Thread *thread;
+    IntStatus oldLevel = interrupt->SetLevel(IntOff);
+
+    thread = (Thread *)->Remove();
+    if (thread != NULL)	   // make thread ready, consuming the V immediately
+	scheduler->ReadyToRun(thread);
+    value++;
+    (void) interrupt->SetLevel(oldLevel);
+}
+
+Condition::Condition(char* debugName) {
+
+}
 Condition::~Condition() { }
-void Condition::Wait(Lock* conditionLock) { ASSERT(FALSE); }
-void Condition::Signal(Lock* conditionLock) { }
-void Condition::Broadcast(Lock* conditionLock) { }
+void Condition::Wait(Lock* conditionLock) {
+	ASSERT(FALSE);
+}
+void Condition::Signal(Lock* conditionLock) {
+
+}
+void Condition::Broadcast(Lock* conditionLock) {
+
+}
